@@ -1,21 +1,33 @@
 from socket import *
-table = {'1':'one', '2':'two', '3':'three', '4':'four', '5':'five',\
-'6':'six', '7':'seven', '8':'eight', '9':'nine', '10':'ten'}
+
 s = socket(AF_INET, SOCK_STREAM)
 s.bind(('', 3333))
 s.listen(5)
 print('waiting...')
+
 while True:
     client, addr = s.accept()
     print('connection from ', addr)
     while True:
-        data = client.recv(1024)
+        data = client.recv(1024).decode()
         if not data:
             break
         try:
-            rsp = table[data.decode()]
+            # 계산식 파싱
+            num1, op, num2 = data.split()
+            # 연산 수행
+            if op == '+':
+                result = int(num1) + int(num2)
+            elif op == '-':
+                result = int(num1) - int(num2)
+            elif op == '*':
+                result = int(num1) * int(num2)
+            elif op == '/':
+                result = round(float(num1) / float(num2), 1)
+            else:
+                raise ValueError
         except:
-            client.send(b'Try again')
+            client.send(b'Invalid input')
         else:
-            client.send(rsp.encode())
+            client.send(str(result).encode())
     client.close()
